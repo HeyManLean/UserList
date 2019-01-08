@@ -5,51 +5,48 @@
     <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="../static/main.js"></script>
+    <script src="/static/main.js"></script>
 </head>
 
 <body>
-    <table class="table table-bordered table-hover"">
+    <table class="table table-bordered table-hover .table-condensed">
         <thead>
             <tr>
                 <th>#</th>
-                <td>图片</td>
-                <td>地址</td>
-                <td>id</td>
-                <td>ip</td>
-                <td>what</td>
+                {% for col in col_names %}
+                    <td>{{ col }}</td>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <th scope="row"><input type="checkbox"></th>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-            </tr>
-            <tr>
-                <th scope="row"><input type="checkbox"></th>
-                    <td>122</td>
-                    <td>122</td>
-                    <td>122</td>
-                    <td>122</td>
-                    <td>122</td>
-            </tr>
-            <tr>
-                <th scope="row"><input type="checkbox"></th>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-                <td>122</td>
-            </tr>
+            {% for user in user_list %}
+                <tr {% if user.status %} class="success" {% endif %}>
+                    <th scope="row"><input type="checkbox" value="{{ user.uid }}"></th>
+                    <td>{{ user.id }}</td>
+                    <td><img src="{{ user.avatar }}" width="50px" height="50px"></td>
+                    <td>{{ user.nickname }}</td>
+                    <td>{{ user.chn }}</td>
+                    <td>{{ user.os }}</td>
+                    <td>{{ user.province }}</td>
+                    <td>{{ user.city }}</td>
+                    <td>{{ user.gender }}</td>
+                    <td>{{ user.create_time }}</td>
+                    <td>{{ user.login_time }}</td>
+                    <td>{% if user.status %} <span class="label label-success">已录入</span>{% endif %}</td>
+                </tr>
+            {% endfor %}
         </tbody>
-
     </table>
-    <button type="还原" class="btn btn-default" style="float: right; margin-right: 30px;">Submit</button>
-    <button type="录入" class="btn btn-default" style="float: right; margin-right: 30px;">Submit</button>
+    <ul class="pagination" style="margin: 0 40px;">
+        <!-- <li><a href="#">&laquo;</a></li> -->
+        {% for i in range(1, total_page + 1) %}
+            <li><a href="/{{ i }}">{{ i }}</a></li>
+        {% endfor %}
+        <!-- <li><a href="#">&raquo;</a></li> -->
+    </ul>
+    <button id="selectUser" type="submit" class="btn btn-success" style="float: right; margin-right: 30px;" onclick="selectUsers()">录入</button>
+    <button id="cancelUser" type="submit" class="btn btn-danger" style="float: right; margin-right: 30px;">还原</button>
+    
 </body>
 
 </html>
