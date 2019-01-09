@@ -31,3 +31,11 @@ function saveUsers(status) {
         }
     });
 }
+
+function selectAll(){
+    var status = $("#selectA")[0].checked;
+    console.log(status);
+    $("input[name=box]").each(function () {
+        this.checked = status;
+    })
+}

@@ -20,19 +20,15 @@ def index():
 
 @app.route('/<int:page>', methods=['GET'])
 def get_list(page: int):
-    col_names = [
-        '#', '#', '昵称', '游戏代号', '游戏版本', '系统', '机型',
-        '省份', '城市', '性别', '注册时间', '最近登录时间', '是否录入',
-    ]
     from app.model import get_user_list
     user_list, total_page, saved_users = get_user_list(page)
     return render_template(
-        'index.html', 
-        col_names=col_names, 
+        'index.html',
         user_list=user_list,
         total_page=total_page,
         current_page=page,
-        saved_users=saved_users
+        saved_users=saved_users,
+        count=len(user_list)
     )
 
 

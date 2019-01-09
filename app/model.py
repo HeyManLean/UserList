@@ -9,7 +9,7 @@ from app.utils import format_datetime
 from app.utils import clear_mobile_model
 
 
-def get_user_list(page, page_size=100):
+def get_user_list(page, page_size=200):
     result = []
 
     uid_set = get_save_uid_set()
@@ -29,7 +29,7 @@ def get_user_list(page, page_size=100):
             'chn': rec['chn'],
             'platform': rec['registered_platform'],
             'avatar': rec['wx_userinfo']['avatarUrl'],
-            'nickname': rec['wx_userinfo']['nickName'],
+            'nickname': rec['wx_userinfo']['nickName'].strip()[:16],
             'province': rec['region']['region'],
             'city': rec['region']['city'],
             'gender': '男' if rec['wx_userinfo']['gender'] == 1 else '女',
@@ -58,6 +58,7 @@ def get_user_records(offset, limit):
     mini_user_collection = db.u_userinfo
     query_dict = {
         "wx_userinfo.openId": {"$exists": 1},
+        "wx_userinfo.avatarUrl": {"$ne": ''},
         "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]}
     }
     records = mini_user_collection.find(query_dict).skip(offset).limit(limit)
