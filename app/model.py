@@ -52,7 +52,8 @@ def get_saved_records(uid_set):
             "uid": uid
         }
         rec = mini_user_collection.find_one(query_dict)
-        records.append(rec)
+        if rec is not None:
+            records.append(rec)
     return records
 
 def get_user_records(offset, limit):
@@ -60,11 +61,10 @@ def get_user_records(offset, limit):
     query_dict = {
         "wx_userinfo.openId": {"$exists": 1},
         "wx_userinfo.avatarUrl": {"$ne": ''},
-        "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]},
-        # "last_auth_time": {"$lte": datetime(2018, 12, 1)}
+        "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都", ""]},
+        "region.region": {"$ne": "广东"}
     }
     records = mini_user_collection.find(query_dict).skip(offset).limit(limit)
-        # sort("registered_time", pymongo.ASCENDING).\
         
     total = mini_user_collection.find(query_dict).count()
 
