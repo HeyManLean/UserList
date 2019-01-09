@@ -1,14 +1,13 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.org/simple"
-verify_ssl = true
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+verify_ssl = false
 
 [dev-packages]
 
 [packages]
 flask = "*"
-flask-boostrap = "*"
-flask-bootstrap = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.6"

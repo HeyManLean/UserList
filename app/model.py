@@ -2,33 +2,134 @@
 
 import random
 
+import pymongo
 
-def get_user_list(page, page_size=10):
-    offset = (page - 1) * page_size
-    limit = page_size
+from app import db
+from app.utils import format_datetime
+from app.utils import clear_mobile_model
 
+
+def get_user_list(page, page_size=100):
     result = []
 
-    records = TEST_RECORD_LIST[offset: offset + limit]
-    total_page = (len(TEST_RECORD_LIST) + page_size - 1) // page_size
+    uid_set = get_save_uid_set()
+    if page != 0:
+        offset = (page - 1) * page_size
+        records, total = get_user_records(offset, page_size)
+        total_page = (total + page_size - 1) // page_size
+    else:
+        records = get_saved_records(uid_set)
+        total_page = 1
 
     for rec_index, rec in enumerate(records):
+        rec_uid = rec['uid']
         user_info = {
             'id': rec_index + 1,
             'uid': rec['uid'],
             'chn': rec['chn'],
-            'os': rec['base']['os'],
+            'platform': rec['registered_platform'],
             'avatar': rec['wx_userinfo']['avatarUrl'],
             'nickname': rec['wx_userinfo']['nickName'],
-            'province': rec['wx_userinfo']['province'],
-            'city': rec['wx_userinfo']['city'],
-            'gender': '男' if rec['wx_userinfo']['gender'] else '女',
-            'create_time': rec['registered_time'],
-            'login_time': rec['modified_time'],
-            'status': random.randint(0, 1)
+            'province': rec['region']['region'],
+            'city': rec['region']['city'],
+            'gender': '男' if rec['wx_userinfo']['gender'] == 1 else '女',
+            'create_time': format_datetime(rec['registered_time']),
+            'login_time': format_datetime(rec['last_auth_time']),
+            'status': 1 if rec_uid in uid_set else 0,
+            'model': clear_mobile_model(rec['base']['model']),
+            'version': rec['ver']
         }
         result.append(user_info)
-    return result, total_page
+    return result, total_page, len(uid_set)
+
+
+def get_saved_records(uid_set):
+    records = []
+    mini_user_collection = db.u_userinfo
+    for uid in uid_set:
+        query_dict = {
+            "uid": uid
+        }
+        rec = mini_user_collection.find_one(query_dict)
+        records.append(rec)
+    return records
+
+def get_user_records(offset, limit):
+    mini_user_collection = db.u_userinfo
+    query_dict = {
+        "wx_userinfo.openId": {"$exists": 1},
+        "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]}
+    }
+    records = mini_user_collection.find(query_dict).skip(offset).limit(limit)
+        # sort("registered_time", pymongo.ASCENDING).\
+        
+    total = mini_user_collection.find(query_dict).count()
+
+    return records, total
+
+
+def get_save_uid_set():
+    mini_collection = db.g10_fake_lucky_user
+    parse_dict = {
+        "uid": True
+    }
+    uid_set = set()
+
+    records = mini_collection.find({}, parse_dict)
+    for rec in records:
+        uid_set.add(rec['uid'])
+    return uid_set
+
+
+def save_users(uids):
+    uids = list(set(uids))
+    mini_collection = db.g10_fake_lucky_user
+    mini_user_collection = db.u_userinfo
+
+    for uid in uids:
+        query_dict = {
+            "uid": uid,
+            "wx_userinfo.openId": {"$exists": 1},
+            "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]}
+        }
+        user_record = mini_user_collection.find_one(query_dict)
+        if not user_record:
+            continue
+
+        user_region = user_record['region']
+        doc = {
+            "uid": uid,
+            "ip" : user_region['ip'], 
+            "region" : user_region['region'], 
+            "isp" : user_region['isp'], 
+            "city" : user_region['city'], 
+            'province': user_region['region'],
+            "country" : user_region['country'],
+            'chn': user_record['chn'],
+            'platform': user_record['registered_platform'],
+            'avatar': user_record['wx_userinfo']['avatarUrl'],
+            'nickname': user_record['wx_userinfo']['nickName'],
+            'gender': user_record['wx_userinfo']['gender'],
+            'create_time': user_record['registered_time'],
+            'login_time': user_record['last_auth_time'],
+            'model': user_record['base']['model'],
+            'version': user_record['ver']
+        }
+        mini_collection.replace_one(query_dict, doc, upsert=True)
+    return True
+
+
+def unsave_users(uids):
+    uids = list(set(uids))
+    mini_collection = db.g10_fake_lucky_user
+
+    for uid in uids:
+        query_dict = {
+            "uid": uid
+        }
+        mini_collection.remove(query_dict)
+    return True
+
 
 
 TEST_RECORD_LIST = [{ 
