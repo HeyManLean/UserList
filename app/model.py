@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+from datetime import datetime
 
 import pymongo
 
@@ -59,7 +60,8 @@ def get_user_records(offset, limit):
     query_dict = {
         "wx_userinfo.openId": {"$exists": 1},
         "wx_userinfo.avatarUrl": {"$ne": ''},
-        "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]}
+        "region.city": {"$nin": ["北京", "上海", "广州", "深圳", "境外", "厦门", "成都"]},
+        # "last_auth_time": {"$lte": datetime(2018, 12, 1)}
     }
     records = mini_user_collection.find(query_dict).skip(offset).limit(limit)
         # sort("registered_time", pymongo.ASCENDING).\
@@ -100,13 +102,17 @@ def save_users(uids):
         user_region = user_record['region']
         doc = {
             "uid": uid,
-            "ip" : user_region['ip'], 
-            "region" : user_region['region'], 
-            "isp" : user_region['isp'], 
-            "city" : user_region['city'], 
-            'province': user_region['region'],
-            "country" : user_region['country'],
+            
+            "region" : user_region,
+
+            # 微信数据
+            "ip": user_record["ip"],
+            "city" : user_record['wx_userinfo']['city'], 
+            'province': user_record['wx_userinfo']['province'],
+            "country" : user_record['wx_userinfo']['country'],
+            "openid": user_record['wx_userinfo']['openId'],
             'chn': user_record['chn'],
+
             'platform': user_record['registered_platform'],
             'avatar': user_record['wx_userinfo']['avatarUrl'],
             'nickname': user_record['wx_userinfo']['nickName'],
@@ -131,6 +137,15 @@ def unsave_users(uids):
         mini_collection.remove(query_dict)
     return True
 
+
+def get_saved_users_json():
+    mini_collection = db.g10_fake_lucky_user
+    records = mini_collection.find({})
+    result = []
+    for rec in records:
+        rec.pop("_id")
+        result.append(rec)
+    return result
 
 
 TEST_RECORD_LIST = [{ 

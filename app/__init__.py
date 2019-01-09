@@ -4,6 +4,7 @@ from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import request
+from flask import jsonify
 from pymongo import MongoClient
 
 
@@ -44,3 +45,10 @@ def handle_users():
         from app.model import unsave_users
         unsave_users(user_uids)
     return ''
+
+
+@app.route('/api/json', methods=['GET'])
+def get_saved_json():
+    from app.model import get_saved_users_json
+    data = get_saved_users_json()
+    return jsonify(data)
