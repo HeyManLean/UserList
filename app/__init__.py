@@ -6,12 +6,32 @@ from flask import redirect
 from flask import request
 from flask import jsonify
 from pymongo import MongoClient
+from mongoengine import register_connection
 
-
-client = MongoClient('mongodb://root:lewantest@172.16.1.201:27017/admin')
-db = client['mini']
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+
+MONGO_DBS = {
+    'db201': ('mongodb://root:lewantest@172.16.1.201:27017/admin', 'mini'),
+    'db202': ('mongodb://mini_api:lewantest@172.16.1.202:27017/mini_api', 'mini_api')
+}
+
+mongo_dbs = {}
+
+
+for key, value in MONGO_DBS.items():
+    db_uri = value[0]
+    db_name = value[1]
+    client = MongoClient(db_uri)
+    mongo_dbs[key] = client[db_name]
+
+    alias = key
+    # mongoengine支持程序同时连接多个数据库，这些数据库可以位于一个或多个mongo之中，通过alias名称区分不同的连接
+    register_connection(db=db_name, alias=alias, host=db_uri)
+
+db = mongo_dbs['db201']
+db2 = mongo_dbs['db202']
 
 
 @app.route('/', methods=['GET'])
@@ -52,3 +72,17 @@ def get_saved_json():
     from app.model import get_saved_users_json
     data = get_saved_users_json()
     return jsonify(data)
+
+
+@app.route('/api/auto_save', methods=['GET'])
+def get_auto_save():
+    from app.model import auto_save
+    auto_save()
+    return ''
+
+
+@app.route('/api/auto_save2', methods=['GET'])
+def get_auto_save2():
+    from app.model import auto_save2
+    auto_save2()
+    return ''

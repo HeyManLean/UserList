@@ -9,6 +9,10 @@ verify_ssl = false
 flask = "*"
 pymongo = "*"
 pytz = "*"
+pillow = "*"
+requests = "*"
+numpy = "*"
+mongoengine = "*"
 
 [requires]
 python_version = "3.6"
