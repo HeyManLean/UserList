@@ -133,7 +133,7 @@ def save_users(uids):
 
 def unsave_users(uids):
     uids = list(set(uids))
-    mini_collection = db.fake_lucky_user
+    mini_collection = db2.g10_fake_lucky_user
 
     for uid in uids:
         query_dict = {
@@ -143,13 +143,22 @@ def unsave_users(uids):
     return True
 
 
-def get_saved_users_json():
-    mini_collection = db2.fake_lucky_user
-    records = mini_collection.find({})
+def get_saved_users_json(limit=None):
+    mini_collection = db2.g10_fake_lucky_user
+    if limit:
+        records = mini_collection.find({}).limit(limit)
+    else:
+        records = mini_collection.find({})
     result = []
     for rec in records:
-        rec.pop("_id")
-        result.append(rec)
+        # rec.pop("_id")
+        # result.append(rec)
+
+        result.append({
+            'nickname': rec['nickname'],
+            'city': rec['region']['city'],
+            'avatar': rec['avatar']
+        })
     return result
 
 

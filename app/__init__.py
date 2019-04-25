@@ -13,8 +13,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 
 MONGO_DBS = {
-    'db201': ('mongodb://root:lewantest@172.16.1.201:27017/admin', 'mini'),
-    'db202': ('mongodb://mini_api:lewantest@172.16.1.202:27017/mini_api', 'mini_api')
+    'db201': ('mongodb://lwtest:lewantest@172.16.1.202:27017/admin', 'mini'),
+    'db202': ('mongodb://lwtest:lewantest@172.16.1.202:27017/admin', 'mini_api')
 }
 
 mongo_dbs = {}
@@ -70,7 +70,11 @@ def handle_users():
 @app.route('/api/json', methods=['GET'])
 def get_saved_json():
     from app.model import get_saved_users_json
-    data = get_saved_users_json()
+    limit = request.args.get('limit')
+    if limit:
+        data = get_saved_users_json(int(limit))
+    else:
+        data = get_saved_users_json()
     return jsonify(data)
 
 
