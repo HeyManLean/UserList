@@ -71,10 +71,11 @@ def handle_users():
 def get_saved_json():
     from app.model import get_saved_users_json
     limit = request.args.get('limit')
+    offset = int(request.args.get('offset', 0))
     if limit:
-        data = get_saved_users_json(int(limit))
+        data = get_saved_users_json(offset, int(limit))
     else:
-        data = get_saved_users_json()
+        data = get_saved_users_json(offset)
     return jsonify(data)
 
 

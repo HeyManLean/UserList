@@ -143,12 +143,12 @@ def unsave_users(uids):
     return True
 
 
-def get_saved_users_json(limit=None):
+def get_saved_users_json(offset=0, limit=None):
     mini_collection = db2.g10_fake_lucky_user
     if limit:
-        records = mini_collection.find({}).limit(limit)
+        records = mini_collection.find({}).skip(offset).limit(limit)
     else:
-        records = mini_collection.find({})
+        records = mini_collection.find({}).skip(offset)
     result = []
     for rec in records:
         # rec.pop("_id")
@@ -157,7 +157,8 @@ def get_saved_users_json(limit=None):
         result.append({
             'nickname': rec['nickname'],
             'city': rec['region']['city'],
-            'avatar': rec['avatar']
+            'avatar': rec['avatar'],
+            'province': rec['region']['region']
         })
     return result
 
