@@ -78,7 +78,7 @@ def auto_save():
 
     i_uids = []
     loaded = 0
-    for rec in user_col.find({'status': 0}).skip(25531 + 16620):
+    for rec in user_col.find({'status': 0}).skip(73000 - 37500):
         nickname = rec['nickname']
         uid = rec['uid']
         avatar = rec.get('avatar_url', '')

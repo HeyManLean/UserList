@@ -14,21 +14,21 @@ db = client['mini_api']
 
 
 BASE_DIR = os.path.abspath(os.path.dirname(__name__))
-IMAGE_DIR = os.path.join(BASE_DIR, '2019')
-if os.path.isdir(IMAGE_DIR):
-    shutil.rmtree(os.path.join(BASE_DIR, '2019'))
+# IMAGE_DIR = os.path.join(BASE_DIR, '2019')
+# if os.path.isdir(IMAGE_DIR):
+#     shutil.rmtree(os.path.join(BASE_DIR, '2019'))
 
 
 def update_users():
     src_col = db.auth_userinfo
     target_col = db.fake_lucky_user_v2
 
-    target_col.delete_many({})
+    # target_col.delete_many({})
 
     query_dict = {'status': 1}
     total = src_col.count_documents(query_dict)
 
-    offset = 0
+    offset = 8600
     limit = 100
 
     while offset < total:
@@ -38,7 +38,11 @@ def update_users():
 
             avatar_url = record['avatar_url']
 
-            res = requests.get(avatar_url)
+            try:
+                res = requests.get(avatar_url, timeout=10)
+            except:
+                print('Request error, uid=%s, url=%s' % (record['uid'], avatar_url))
+                continue
 
             random_dir = get_random_dir()
             random_name = get_random_string() + '.jpg'
